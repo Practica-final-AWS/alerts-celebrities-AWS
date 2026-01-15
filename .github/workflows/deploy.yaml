@@ -1,26 +1,8 @@
-name: Deploy S3 Bucket
-
-on:
-  push:
-    branches:
-      - main
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Configurar AWS
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Desplegar bucket
-        run: |
-          aws cloudformation deploy \
-            --template-file cloudformation/s3-bucket.yaml \
-            --stack-name mi-bucket-stack
+version: 1.0
+template-file-path: template.yaml
+# This tells CloudFormation to use the existing stack name 
+# instead of trying to create a new one.
+stack-name: Celebrity-Detector-App
+parameters: {}
+tags:
+  ManagedBy: GitHub
