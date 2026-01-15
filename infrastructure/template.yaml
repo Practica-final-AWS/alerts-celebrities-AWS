@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: S3 to SQS to Lambda with Rekognition and DynamoDB.
-
+# This is a test!!!
 Resources:
   # 1. DynamoDB Table
   CelebrityResultsTable:
