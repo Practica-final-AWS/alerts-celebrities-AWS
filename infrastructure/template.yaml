@@ -9,7 +9,7 @@ Resources:
       Tags:
         - Key: PipelineTest
           Value: UpdateSuccessful
-  # 0.1 This other bucket is not part of the architecture: just a test to verify if CF actually receives new changes
+  # 0.1 Thiss other bucket is not part of the architecture: just a test to verify if CF actually receives new changes
   MyBucket:
     Type: AWS::S3::Bucket
     Properties:
