@@ -140,6 +140,11 @@ Resources:
                       celebs = response.get('CelebrityFaces', [])
                       is_celebrity = len(celebs) > 0
                       celeb_name = celebs[0]['Name'] if is_celebrity else "None"
+                      if is_celebrity:
+                          celeb_name = celebs[0]['Name']
+                      else:
+                          celeb_name = "None"
+
                       
                       # Save to DynamoDB
                       table.put_item(Item={
