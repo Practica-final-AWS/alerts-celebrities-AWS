@@ -2,20 +2,6 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: S3 to SQS to Lambda with Rekognition and DynamoDB.
 # The test actually worked!!!
 Resources:
-  # 0. This bucket is not part of the architecture: just a test to verify if CF actually receives new changes
-  MyBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      Tags:
-        - Key: PipelineTest
-          Value: UpdateSuccessful
-  # 0.1 Thiss other bucket is not part of the architecture: just a test to verify if CF actually receives new changes
-  MyBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      Tags:
-        - Key: PipelineTest
-          Value: UpdateSuccessful
   # 1. DynamoDB Table
   CelebrityResultsTable:
     Type: AWS::DynamoDB::Table
