@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "Pipeline #2 - Upload Logic and URL Generation"
+
+Resources:
+  # 1. The Lambda Function
+  UploadUrlFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-URLGenerator"
+      Handler: index.lambda_handler
+      Runtime: python3.11
+      Role: "arn:aws:iam::YOUR_ACCOUNT_ID:role/AppPipelineRole" # Use your existing role ARN
+      Code:
+        ZipFile: |
+          import boto3
+          import os
+          import json
+          import uuid
+
+          def lambda_handler(event, context):
+              s3 = boto3.client('s3')
+              # We'll pass the bucket name via environment variable
+              bucket_name = os.environ['celebrity-upload-498747779442-v2 ']
+              
+              # Get filename from query params or generate a random one
+              params = event.get('queryStringParameters', {}) or {}
+              file_name = params.get('fileName', f"{uuid.uuid4()}.jpg")
+              
+              try:
+                  url = s3.generate_presigned_url(
+                      'put_object',
+                      Params={'Bucket': bucket_name, 'Key': file_name},
+                      ExpiresIn=300
+                  )
+                  return {
+                      "statusCode": 200,
+                      "headers": {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Headers": "Content-Type",
+                          "Access-Control-Allow-Methods": "GET,OPTIONS"
+                      },
+                      "body": json.dumps({"uploadUrl": url, "fileName": file_name})
+                  }
+              except Exception as e:
+                  return {"statusCode": 500, "body": str(e)}
+      Environment:
+        Variables:
+          # Change this to your actual upload bucket name
+          UPLOAD_BUCKET: "celebrity-upload-498747779442-v2" 
+
+  # 2. The Function URL (Direct HTTPS link)
+  UploadUrlFunctionEndpoint:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn: !Ref UploadUrlFunction
+      AuthType: NONE # Makes it public so your JS can call it
+      Cors:
+        AllowOrigins: 
+          - "*" # You can restrict this to your website URL later
+
+  # 3. Permission to allow the Public to call the URL
+  UploadUrlPublicPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref UploadUrlFunction
+      Action: lambda:InvokeFunctionUrl
+      Principal: "*"
+      FunctionUrlAuthType: NONE
+
+Outputs:
+  LambdaUploadEndpoint:
+    Description: "Copy this URL into your index.html JavaScript"
+    Value: !GetAtt UploadUrlFunctionEndpoint.FunctionUrl
