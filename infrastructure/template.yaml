@@ -44,24 +44,21 @@ Resources:
         BlockPublicPolicy: false
 
   # 2. THE PERMISSION FIX (Explicitly naming the role from your error)
-  WebsiteBucketPipelinePolicy:
+  WebsiteBucketPipelinePolicy: # Your logical ID
     Type: AWS::S3::BucketPolicy
+    DependsOn: AppPipelineRole # Forces the role to be created first
     Properties:
       Bucket: !Ref WebsiteBucket
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:role/service-role/AWSCodePipelineServiceRole-us-east-1-Celebrity-Detector-Sync"
-            Action: 
+          - Action:
               - s3:PutObject
-              - s3:PutObjectAcl  # ADD THIS LINE
-              - s3:GetBucketLocation
-              - s3:ListBucket
-            Resource: 
-              - !Sub "arn:aws:s3:::${WebsiteBucket}"
-              - !Sub "arn:aws:s3:::${WebsiteBucket}/*"
+              - s3:PutObjectAcl
+            Effect: Allow
+            Resource: !Sub "arn:aws:s3:::${WebsiteBucket}/*"
+            Principal:
+              AWS: !GetAtt AppPipelineRole.Arn
 
   # 3. THE IMAGE UPLOAD BUCKET
   ImageBucket:
@@ -220,6 +217,68 @@ Resources:
       IdentityPoolId: !Ref IdentityPool
       Roles:
         unauthenticated: !GetAtt IdentityPoolRole.Arn
+
+  # THE PERMISSIONED ROLE FOR THE NEW PIPELINE
+  AppPipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: PipelineExtendedAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:*
+                  - cloudformation:*
+                  - iam:PassRole
+                  - codeconnections:UseConnection # THIS IS THE MISSING KEY
+                  - codestar-connections:UseConnection
+                Resource: "*"
+
+  # THE ACTUAL PIPELINE
+  CelebrityDetectorPipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      RoleArn: !GetAtt AppPipelineRole.Arn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref WebsiteBucket # Or a separate artifact bucket if you prefer
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: GitHub_Source
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeStarSourceConnection
+                Version: "1"
+              Configuration:
+                ConnectionArn: "arn:aws:codeconnections:us-east-1:498747779442:connection/282f8ea4-1b52-4a4c-9471-1bf28f8a9912"
+                FullRepositoryId: "Practica-final-AWS/alerts-celebrities-AWS"
+                BranchName: "main"
+              OutputArtifacts:
+                - Name: SourceArtifact
+        - Name: Deploy
+          Actions:
+            - Name: S3_Deploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: S3
+                Version: "1"
+              Configuration:
+                BucketName: !Ref WebsiteBucket
+                Extract: "true"
+              InputArtifacts:
+                - Name: SourceArtifact
 
 Outputs:
   MyIdentityPoolId:
