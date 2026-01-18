@@ -98,7 +98,7 @@ Resources:
 
   # 6. THE PROCESSING LAMBDA (Rekognition + SNS)
   ProcessingLambda:
-    Type: AWS::Serverless::Function
+    Type: AWS::Lambda::Function
     Properties:
       Handler: index.handler
       Runtime: python3.11
@@ -107,16 +107,6 @@ Resources:
         Variables:
           TABLE_NAME: !Ref CelebrityResultsTable
           SNS_TOPIC_ARN: !Ref CelebrityAlertTopic
-      Policies:
-        - AmazonRekognitionFullAccess
-        - AmazonS3ReadOnlyAccess
-        - DynamoDBCrudPolicy: {TableName: !Ref CelebrityResultsTable}
-        - SNSPublishMessagePolicy: {TopicName: !GetAtt CelebrityAlertTopic.TopicName}
-      Events:
-        QueueEvent:
-          Type: SQS
-          Properties:
-            QueueArn: !GetAtt ImageProcessQueue.Arn
       Code:
         ZipFile: |
           import boto3
