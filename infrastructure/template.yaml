@@ -4,6 +4,7 @@ Transform: 'AWS::Serverless-2016-10-31'
 Parameters:
   UserEmail:
     Type: String
+    Default:"manugalang2007@gmail.com"
     Description: Your email for celebrity alerts.
 
 Resources:
