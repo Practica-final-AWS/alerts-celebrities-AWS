@@ -8,7 +8,7 @@ Parameters:
     Description: Your email for celebrity alerts.
 
 Resources:
-  # 1. THE WEBSITE HOSTING
+  # 1. THE WEBSITE HOSTING (S3)
   WebsiteBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -29,27 +29,34 @@ Resources:
             Action: s3:GetObject
             Resource: !Sub "arn:aws:s3:::${WebsiteBucket}/*"
 
-  # 2. THE IMAGE UPLOAD BUCKET (With CORS for the browser)
+  # 2. THE IMAGE UPLOAD BUCKET (With CORS)
   ImageBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "celebrity-upload-${AWS::AccountId}"
-      CorsConfiguration:
-        CorsRules:
-          - AllowedHeaders: ['*']
-            AllowedMethods: [PUT, POST]
-            AllowedOrigins: ['*'] # Restrict this to your website URL later
       NotificationConfiguration:
         QueueConfigurations:
           - Event: s3:ObjectCreated:*
             Queue: !GetAtt ImageProcessQueue.Arn
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ['*']
+            AllowedMethods: [PUT, POST]
+            AllowedOrigins: ['*']
 
-  # 3. SNS & DYNAMODB
+  # 3. DYNAMODB TABLE (Standard Version)
   CelebrityResultsTable:
-    Type: AWS::Serverless::SimpleTable
+    Type: AWS::DynamoDB::Table
     Properties:
-      PrimaryKey: {Name: ImageKey, Type: String}
+      AttributeDefinitions:
+        - AttributeName: ImageKey
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ImageKey
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
 
+  # 4. SNS NOTIFICATION
   CelebrityAlertTopic:
     Type: AWS::SNS::Topic
 
@@ -60,12 +67,43 @@ Resources:
       Protocol: email
       Endpoint: !Ref UserEmail
 
-  # 4. THE PROCESSING LAMBDA (Rekognition + SNS)
+  # 5. LAMBDA EXECUTION ROLE
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CelebrityProcessorPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - rekognition:RecognizeCelebrities
+                  - s3:GetObject
+                  - dynamodb:PutItem
+                  - sns:Publish
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource: "*"
+
+  # 6. THE PROCESSING LAMBDA (Rekognition + SNS)
   ProcessingLambda:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.handler
       Runtime: python3.11
+      Role: !GetAtt LambdaExecutionRole.Arn
       Environment:
         Variables:
           TABLE_NAME: !Ref CelebrityResultsTable
@@ -175,9 +213,17 @@ Resources:
 
             return {"status": "success", "processed_count": len(event['Records'])}}
 
-  # 5. SQS & PERMISSION
+  # 7. SQS QUEUE & PERMISSIONS
   ImageProcessQueue:
     Type: AWS::SQS::Queue
+
+  LambdaSQSEventSource:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      Enabled: true
+      EventSourceArn: !GetAtt ImageProcessQueue.Arn
+      FunctionName: !Ref ProcessingLambda
 
   QueuePolicy:
     Type: AWS::SQS::QueuePolicy
@@ -189,3 +235,6 @@ Resources:
             Principal: {Service: s3.amazonaws.com}
             Action: sqs:SendMessage
             Resource: !GetAtt ImageProcessQueue.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Sub "arn:aws:s3:::celebrity-upload-${AWS::AccountId}"
