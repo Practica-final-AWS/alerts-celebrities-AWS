@@ -213,7 +213,7 @@ Resources:
 
             return {"status": "success", "processed_count": len(event['Records'])}}
 
-  # 7. SQS QUEUE & PERMISSIONS
+  # 7. SQS QUEUE & PERMISSION
   ImageProcessQueue:
     Type: AWS::SQS::Queue
 
