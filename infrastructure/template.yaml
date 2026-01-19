@@ -84,6 +84,12 @@ Resources:
                   - sqs:ReceiveMessage
                   - sqs:DeleteMessage
                   - sqs:GetQueueAttributes
+
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource: !Ref CelebrityAlertTopic
+
                 Resource: "*"
 
   # 6. Lambda Function
@@ -142,22 +148,17 @@ Resources:
       BatchSize: 10
       EventSourceArn: !GetAtt ImageProcessQueue.Arn
       FunctionName: !Ref CelebrityLambda
-      Version: "2012-10-17"
-      Statement:
-        - Effect: Allow
-          Principal:
-            Service: codepipeline.amazonaws.com
-          Action: "sts:AssumeRole"
-      Policies:
-        - PolicyName: PipelineExtendedAccess
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:*
-                  - cloudformation:*
-                  - iam:PassRole
-                  - codeconnections:UseConnection # THIS IS THE MISSING KEY
-                  - codestar-connections:UseConnection
-                Resource: "*"
+
+  
+  # 8. SNS-alerts
+  CelebrityAlertTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: CelebrityAlertTopic
+
+  CelebrityAlertSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: email
+      Endpoint: 22577867@live.uem.es  # Reemplaza con tu correo
+      TopicArn: !Ref CelebrityAlertTopic
