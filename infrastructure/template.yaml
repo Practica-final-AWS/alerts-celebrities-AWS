@@ -84,11 +84,7 @@ Resources:
                   - sqs:ReceiveMessage
                   - sqs:DeleteMessage
                   - sqs:GetQueueAttributes
-
-              - Effect: Allow
-                Action:
                   - sns:Publish
-                Resource: !Ref CelebrityAlertTopic
 
                 Resource: "*"
 
