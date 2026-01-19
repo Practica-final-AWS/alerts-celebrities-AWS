@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-# Testing the Pipeline - [2026.01.18]
+# Testing the Pipeline - [2026:01:18]
 Parameters:
   UserEmail:
     Type: String
