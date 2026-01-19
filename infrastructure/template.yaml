@@ -99,6 +99,7 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref CelebrityResultsTable
+          SNS_TOPIC_ARN: !Ref CelebrityAlertTopic
       Code:
         ZipFile: |
           import boto3
@@ -108,6 +109,8 @@ Resources:
           rekognition = boto3.client('rekognition')
           dynamodb = boto3.resource('dynamodb')
           table = dynamodb.Table(os.environ['TABLE_NAME'])
+          sns = boto3.client('sns')
+          sns_topic_arn = os.environ['SNS_TOPIC_ARN']
 
           def handler(event, context):
               for record in event['Records']:
@@ -136,7 +139,7 @@ Resources:
                           'Bucket': bucket
                       })
 
-                                  # Publicar en SNS si hay un famoso
+                      # Publicar en SNS si hay un famoso
                       if is_celebrity:
                           message = f"Se detectó al famoso {celeb_name} en la imagen {key} del bucket {bucket}."
                           sns.publish(
