@@ -241,4 +241,9 @@ LambdaUploadRole:
             - Effect: Allow
               Action: s3:PutObject
               Resource: !Sub "arn:aws:s3:::celebrity-upload-bucket-${AWS::AccountId}/*"
-
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: "*"
