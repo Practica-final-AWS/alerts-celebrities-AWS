@@ -2,13 +2,6 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: S3 to SQS to Lambda with Rekognition and DynamoDB.
 
 Resources:
-  # Second Bucket
-  BackupCelebrityBucket: # Unique Logical ID 2
-    Type: AWS::S3::Bucket
-    Properties:
-      Tags:
-        - Key: PipelineTest
-          Value: SecondBucketSuccess
   # 1. DynamoDB Table
   CelebrityResultsTable:
     Type: AWS::DynamoDB::Table
