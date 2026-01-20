@@ -1,10 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: S3 to SQS to Lambda with Rekognition and DynamoDB.
 
-Parameters:
-  WebBucketName:
-    Type: String
-    Description: "Nombre del bucket para la web"
 
 Resources:
   # 1. DynamoDB Table
