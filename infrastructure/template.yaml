@@ -309,7 +309,8 @@ Resources:
     Properties:
       ApiId: !Ref HttpApi
       RouteKey: "POST /upload-url"
-      Target: !Sub integrations/${UploadIntegration.Ref}
+      Target: !Sub integrations/${UploadIntegration}
+
 
   UploadStage:
     Type: AWS::ApiGatewayV2::Stage
