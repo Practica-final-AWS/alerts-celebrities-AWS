@@ -5,7 +5,6 @@ Parameters:
   WebBucketName:
     Type: String
     Description: "Nombre del bucket para la web index.html"
-    Default: !Sub "web-bucket-html-${AWS::AccountId}"
 
 Resources:
   # 1. DynamoDB Table
@@ -178,7 +177,7 @@ Resources:
   WebBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Ref WebBucketName
+      BucketName: !Sub "web-bucket-html-${AWS::AccountId}"
       WebsiteConfiguration:
         IndexDocument: index.html
       PublicAccessBlockConfiguration:
