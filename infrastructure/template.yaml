@@ -240,7 +240,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action: s3:PutObject
-                Resource: !Sub "arn:aws:s3:::celebrity-upload-bucket-${AWS::AccountId}/*"
+                Resource: !Sub !Sub "${ImageBucket.Arn}/*"
               - Effect: Allow
                 Action:
                   - logs:CreateLogGroup
