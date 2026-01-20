@@ -182,43 +182,6 @@ Resources:
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
 
-  WebBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref WebBucket
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: cloudfront.amazonaws.com
-            Action: s3:GetObject
-            Resource: !Sub ${WebBucket.Arn}/*
-            Condition:
-              StringEquals:
-                AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${WebDistribution}
 
-# ----------------------------
-# CLOUDFRONT
-# ----------------------------
-  WebDistribution:
-    Type: AWS::CloudFront::Distribution
-    Properties:
-      DistributionConfig:
-        Enabled: true
-        DefaultRootObject: index.html
-        Origins:
-          - Id: WebOrigin
-            DomainName: !GetAtt WebBucket.RegionalDomainName
-            S3OriginConfig: {}
-        DefaultCacheBehavior:
-          TargetOriginId: WebOrigin
-          ViewerProtocolPolicy: redirect-to-https
-          AllowedMethods: [GET, HEAD]
-          CachedMethods: [GET, HEAD]
-          ForwardedValues:
-            QueryString: false
-        ViewerCertificate:
-          CloudFrontDefaultCertificate: true
 
               
