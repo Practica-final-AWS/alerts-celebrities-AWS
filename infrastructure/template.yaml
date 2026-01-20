@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: S3 to SQS to Lambda with Rekognition and DynamoDB.
+Description: S3 to SQS to Lambda with Rekognition, DynamoDB and SNS.
 
 Resources:
   # 1. DynamoDB Table
@@ -200,6 +200,7 @@ Resources:
 # ----------------------------
 # CLOUDFRONT
 # ----------------------------
+
   WebDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
