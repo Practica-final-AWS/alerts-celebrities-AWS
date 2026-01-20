@@ -1,6 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: S3 to SQS to Lambda with Rekognition and DynamoDB.
 
+Parameters:
+  WebBucketName:
+    Type: String
+    Description: "Nombre del bucket para la web"
+
 Resources:
   # 1. DynamoDB Table
   CelebrityResultsTable:
@@ -257,7 +262,7 @@ Resources:
       FunctionName: generate-upload-url
       Runtime: python3.11
       Handler: index.lambda_handler
-      Role: !GetAtt LambdaRole.Arn
+      Role: !GetAtt LambdaUploadRole.Arn
       Timeout: 10
       Environment:
         Variables:
