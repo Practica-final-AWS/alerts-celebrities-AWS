@@ -221,7 +221,7 @@ Resources:
           CloudFrontDefaultCertificate: true
 
 # Nuevos cambios
-    # Lambda para generar URL prefirmada
+# Lambda para generar URL prefirmada
 LambdaUploadRole:
   Type: AWS::IAM::Role
   Properties:
@@ -233,7 +233,7 @@ LambdaUploadRole:
             Service: lambda.amazonaws.com
           Action: sts:AssumeRole
     Policies:
-      - PolicyName: upload-policy
+      - PolicyName: upload_policy
         PolicyDocument:
           Version: "2012-10-17"
           Statement:
