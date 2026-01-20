@@ -225,7 +225,6 @@ Resources:
 LambdaUploadRole:
   Type: AWS::IAM::Role
   Properties:
-    RoleName: lambda-upload-role
     AssumeRolePolicyDocument:
       Version: "2012-10-17"
       Statement:
@@ -234,7 +233,7 @@ LambdaUploadRole:
             Service: lambda.amazonaws.com
           Action: sts:AssumeRole
     Policies:
-      - PolicyName: upload-policy
+      - PolicyName: upload_policy
         PolicyDocument:
           Version: "2012-10-17"
           Statement:
