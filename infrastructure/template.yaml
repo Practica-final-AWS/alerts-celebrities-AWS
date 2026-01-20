@@ -4,7 +4,7 @@ Description: S3 to SQS to Lambda with Rekognition and DynamoDB.
 Parameters:
   WebBucketName:
     Type: String
-    Description: "Nombre del bucket para la web"
+    Description: "Nombre del bucket para la web index.html"
     Default: !Sub "web-bucket-html-${AWS::AccountId}"
 
 Resources:
