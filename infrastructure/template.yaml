@@ -221,7 +221,32 @@ Resources:
           CloudFrontDefaultCertificate: true
 
 # Nuevos cambios
-
+    # Lambda para generar URL prefirmada
+  LambdaUploadRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: lambda-upload-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: upload-policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: s3:PutObject
+                Resource: !Sub "arn:aws:s3:::celebrity-upload-bucket-${AWS::AccountId}"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
 
 
 
