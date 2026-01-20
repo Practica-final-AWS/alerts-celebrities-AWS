@@ -248,7 +248,4 @@ LambdaUploadRole:
                 - logs:PutLogEvents
               Resource: "*"
 
-
-
-
               
