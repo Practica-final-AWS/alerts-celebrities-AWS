@@ -176,10 +176,10 @@ Resources:
       WebsiteConfiguration:
         IndexDocument: index.html
       PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
 
   WebBucketPolicy:
     Type: AWS::S3::BucketPolicy
