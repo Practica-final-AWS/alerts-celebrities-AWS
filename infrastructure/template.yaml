@@ -220,4 +220,118 @@ Resources:
         ViewerCertificate:
           CloudFrontDefaultCertificate: true
 
+# Nuevos cambios
+  # Lambda para generar URL prefirmada
+  LambdaUploadRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: lambda-upload-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: upload-policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: s3:PutObject
+                Resource: !Sub "arn:aws:s3:::celebrity-upload-bucket-${AWS::AccountId}"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+
+  # ----------------------------
+  # LAMBDA (PYTHON)
+  # ----------------------------
+  UploadLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: generate-upload-url
+      Runtime: python3.11
+      Handler: index.lambda_handler
+      Role: !GetAtt LambdaUploadRole.Arn
+      Timeout: 10
+      Environment:
+        Variables:
+          BUCKET_NAME: !Sub "arn:aws:s3:::celebrity-upload-bucket-${AWS::AccountId}"
+      Code:
+        ZipFile: |
+          import json, boto3, os, time
+          s3 = boto3.client("s3")
+          BUCKET = os.environ["BUCKET_NAME"]
+          ALLOWED = ["image/png","image/jpeg","image/gif","image/webp"]
+
+          def lambda_handler(event, context):
+              body = json.loads(event.get("body","{}"))
+              if body.get("contentType") not in ALLOWED:
+                  return resp(400,"Invalid type")
+              key = f"uploads/{int(time.time())}-{body['filename']}"
+              url = s3.generate_presigned_url(
+                  "put_object",
+                  Params={"Bucket":BUCKET,"Key":key,"ContentType":body["contentType"]},
+                  ExpiresIn=60
+              )
+              return {"statusCode":200,"headers":{"Access-Control-Allow-Origin":"*"},"body":json.dumps({"uploadUrl":url})}
+
+          def resp(c,m):
+              return {"statusCode":c,"headers":{"Access-Control-Allow-Origin":"*"},"body":json.dumps({"error":m})}
+# ----------------------------
+# API GATEWAY
+# ----------------------------
+  HttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: upload-api
+      ProtocolType: HTTP
+      CorsConfiguration:
+        AllowOrigins: ["*"]
+        AllowMethods: ["POST","OPTIONS"]
+        AllowHeaders: ["*"]
+
+  Integration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt UploadLambda.Arn
+      IntegrationMethod: POST
+      PayloadFormatVersion: "2.0"
+
+  Route:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "POST /upload-url"
+      Target: !Sub integrations/${Integration}
+
+  Stage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref HttpApi
+      StageName: "$default"
+      AutoDeploy: true
+
+  Permission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref UploadLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub ${HttpApi.ExecutionArn}/*/*
+
+Outputs:
+  WebsiteURL:
+    Value: !Sub https://${WebDistribution.DomainName}
+  UploadApiUrl:
+    Value: !Sub ${HttpApi.ApiEndpoint}/upload-url
+
+
               

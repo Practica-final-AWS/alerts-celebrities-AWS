@@ -288,55 +288,55 @@ Resources:
 
           def resp(c,m):
               return {"statusCode":c,"headers":{"Access-Control-Allow-Origin":"*"},"body":json.dumps({"error":m})}
-  # ----------------------------
-  # API GATEWAY
-  # ----------------------------
-    HttpApi:
-      Type: AWS::ApiGatewayV2::Api
-      Properties:
-        Name: upload-api
-        ProtocolType: HTTP
-        CorsConfiguration:
-          AllowOrigins: ["*"]
-          AllowMethods: ["POST","OPTIONS"]
-          AllowHeaders: ["*"]
+# ----------------------------
+# API GATEWAY
+# ----------------------------
+  HttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: upload-api
+      ProtocolType: HTTP
+      CorsConfiguration:
+        AllowOrigins: ["*"]
+        AllowMethods: ["POST","OPTIONS"]
+        AllowHeaders: ["*"]
 
-    Integration:
-      Type: AWS::ApiGatewayV2::Integration
-      Properties:
-        ApiId: !Ref HttpApi
-        IntegrationType: AWS_PROXY
-        IntegrationUri: !GetAtt UploadLambda.Arn
-        IntegrationMethod: POST
-        PayloadFormatVersion: "2.0"
+  Integration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt UploadLambda.Arn
+      IntegrationMethod: POST
+      PayloadFormatVersion: "2.0"
 
-    Route:
-      Type: AWS::ApiGatewayV2::Route
-      Properties:
-        ApiId: !Ref HttpApi
-        RouteKey: "POST /upload-url"
-        Target: !Sub integrations/${Integration}
+  Route:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "POST /upload-url"
+      Target: !Sub integrations/${Integration}
 
-    Stage:
-      Type: AWS::ApiGatewayV2::Stage
-      Properties:
-        ApiId: !Ref HttpApi
-        StageName: "$default"
-        AutoDeploy: true
+  Stage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref HttpApi
+      StageName: "$default"
+      AutoDeploy: true
 
-    Permission:
-      Type: AWS::Lambda::Permission
-      Properties:
-        FunctionName: !Ref UploadLambda
-        Action: lambda:InvokeFunction
-        Principal: apigateway.amazonaws.com
-        SourceArn: !Sub ${HttpApi.ExecutionArn}/*/*
+  Permission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref UploadLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub ${HttpApi.ExecutionArn}/*/*
 
-  Outputs:
-    WebsiteURL:
-      Value: !Sub https://${WebDistribution.DomainName}
-    UploadApiUrl:
-      Value: !Sub ${HttpApi.ApiEndpoint}/upload-url
+Outputs:
+  WebsiteURL:
+    Value: !Sub https://${WebDistribution.DomainName}
+  UploadApiUrl:
+    Value: !Sub ${HttpApi.ApiEndpoint}/upload-url
 
 
               
