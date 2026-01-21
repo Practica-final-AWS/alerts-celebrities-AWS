@@ -66,7 +66,10 @@
             // 2️⃣ Subir a S3
             const upload = await fetch(uploadUrl, {
               method: "PUT",
-              body: file
+              body: file,
+              headers: {
+                "Content-Type": file.type  // <-- aquí añadimos el Content-Type
+              }
             });
 
             if (!upload.ok) throw new Error("Error subiendo a S3");

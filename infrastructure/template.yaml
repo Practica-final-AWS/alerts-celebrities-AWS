@@ -295,10 +295,12 @@ Resources:
 
           def lambda_handler(event, context):
               body = json.loads(event.get("body","{}"))
+              if body.get("contentType") not in ALLOWED:
+                  return resp(400,"Invalid type")
               key = f"uploads/{int(time.time())}-{body['filename']}"
               url = s3.generate_presigned_url(
                   "put_object",
-                  Params={"Bucket":BUCKET,"Key":key},
+                  Params={"Bucket":BUCKET,"Key":key,"ContentType": body["contentType"]},
                   ExpiresIn=60
               )
               return {"statusCode":200,"headers":{"Access-Control-Allow-Origin":"*"},"body":json.dumps({"uploadUrl":url})}
