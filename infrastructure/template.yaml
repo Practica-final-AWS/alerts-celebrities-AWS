@@ -45,6 +45,19 @@ Resources:
     DependsOn: QueuePolicy
     Properties:
       BucketName: !Sub "celebrity-upload-bucket-${AWS::AccountId}"
+      CorsConfiguration:
+        CorsRules:
+          - AllowedOrigins:
+              - "*"
+            AllowedMethods:
+              - PUT
+              - POST
+              - GET
+            AllowedHeaders:
+              - "*"
+            ExposedHeaders:
+              - ETag
+            MaxAge: 3000
       NotificationConfiguration:
         QueueConfigurations:
           - Event: s3:ObjectCreated:*
