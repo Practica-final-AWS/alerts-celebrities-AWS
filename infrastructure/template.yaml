@@ -225,7 +225,33 @@ Resources:
         SigningBehavior: always
         SigningProtocol: sigv4
 
-
+  WebDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        Origins:
+          - Id: WebOrigin
+            DomainName: !GetAtt WebBucket.RegionalDomainName
+            OriginAccessControlId: !Ref CloudFrontOAC
+            S3OriginConfig: {}
+        DefaultCacheBehavior:
+          TargetOriginId: WebOrigin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD]
+          CachedMethods: [GET, HEAD]
+          DefaultTTL: 0          # Tiempo en cache por defecto = 0 segundos
+          MaxTTL: 0              # TTL máximo = 0
+          MinTTL: 0              # TTL mínimo = 0
+          ForwardedValues:
+            QueryString: true      # Para que respete query strings (útil si haces ?v=1)
+            Headers:
+              - Origin            # Para que respete headers de control
+            Cookies:
+              Forward: none
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
 
   # Lambda para generar URL prefirmada
   LambdaUploadRole:
