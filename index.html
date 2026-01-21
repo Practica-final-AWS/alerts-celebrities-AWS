@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Image Upload</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
 
@@ -13,7 +14,7 @@
       const imageGrid = document.getElementById('imageGrid');
 
       // Tu endpoint de Lambda que genera la URL prefirmada
-      const PRESIGNED_API = "https://hh2pnamyi7.execute-api.us-east-1.amazonaws.com/upload-url";
+      const PRESIGNED_API = "https://duekpvwv7j.execute-api.us-east-1.amazonaws.com/upload-url";
 
       // Drag & drop handlers
       uploadZone.addEventListener('dragover', (e) => {
@@ -50,7 +51,8 @@
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                filename: file.name
+                filename: file.name,
+                contentType: file.type
               })
             });
 
