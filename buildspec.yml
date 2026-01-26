@@ -1,34 +1,31 @@
 version: 0.2
 
-env:
-  variables:
-    BUCKET_NAME: web-bucket-html-$AWS_ACCOUNT_ID  # Variable de entorno para el bucket
-    AWS_ACCOUNT_ID: !Ref AWS::AccountId          # CloudFormation injecta el AccountId
-    REGION: !Ref AWS::Region
-
 phases:
   pre_build:
     commands:
-      # 1. Buscamos la URL de la API usando el CLI de AWS. 
-      # Filtramos por el nombre que le pusiste a tu HttpApi en la template.
-      - echo Buscando la URL de la API...
+      - echo "Detectando entorno..."
+      # CodeBuild ya sabe su cuenta y región, no necesitas !Ref
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+      - BUCKET_NAME="web-bucket-html-${ACCOUNT_ID}"
+      - echo "Buscando la URL de la API..."
+      # Buscamos la API por nombre
       - API_ID=$(aws apigatewayv2 get-apis --query "Items[?Name=='upload-api'].ApiId" --output text)
-      - REGION=$AWS_REGION
-      - FULL_URL="https://${API_ID}.execute-api.${REGION}.amazonaws.com/upload-url"
-      - echo "La URL detectada es $FULL_URL"
+      - FULL_URL="https://${API_ID}.execute-api.${AWS_REGION}.amazonaws.com/upload-url"
+      - echo "La URL detectada es ${FULL_URL}"
 
   build:
     commands:
-      # 2. El comando mágico: 'sed' busca el marcador y lo cambia por la URL real
-      - sed -i "s|REPLACE_ME_WITH_API_URL|$FULL_URL|g" index.html
+      - echo "Inyectando URL en index.html..."
+      - sed -i "s|REPLACE_ME_WITH_API_URL|${FULL_URL}|g" index.html
 
   post_build:
     commands:
-      # 3. Subimos el archivo ya modificado al bucket web
-      - aws s3 cp index.html s3://$BUCKET_NAME/index.html
-      # 4. (Opcional) Limpiamos la caché de CloudFront para que el cambio sea instantáneo
-      - DIST_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[0].Id=='web-bucket-origin'].Id" --output text)
-      - aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"
+      - echo "Subiendo archivo a S3..."
+      - aws s3 cp index.html s3://${BUCKET_NAME}/index.html
+      - echo "Limpiando caché de CloudFront..."
+      # Buscamos la distribución que tiene como origen el nombre de tu bucket
+      - DIST_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?contains(Origins.Items[0].DomainName, '${BUCKET_NAME}')].Id" --output text)
+      - if [ "$DIST_ID" != "None" ]; then aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"; fi
 
 artifacts:
   files:
