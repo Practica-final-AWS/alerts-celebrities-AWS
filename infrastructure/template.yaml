@@ -208,7 +208,7 @@ Resources:
             Resource: !Sub ${WebBucket.Arn}/*
             Condition:
               StringEquals:
-                AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${WebDistribution}
+                AWS:SourceArn: "*"
 
 # ----------------------------
 # CLOUDFRONT
