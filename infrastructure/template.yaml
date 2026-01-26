@@ -138,7 +138,6 @@ Resources:
                       celebs = response.get('CelebrityFaces', [])
                       is_celebrity = len(celebs) > 0
                       celeb_name = str(celebs[0]['Name']) if is_celebrity else "None"
-                      match_confidence= float(celebs[0]['MatchConfidence']) if is_celebrity else 0.0
                       now = datetime.now(ZoneInfo("Europe/Madrid")).isoformat()
 
                       # Save to DynamoDB
@@ -147,7 +146,6 @@ Resources:
                           'IsCelebrity': is_celebrity,
                           'CelebrityName': celeb_name,
                           'Bucket': bucket,
-                          'MatchConfidence': match_confidence,
                           'timestamp': now
                       })
 
