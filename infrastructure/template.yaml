@@ -410,15 +410,15 @@ Resources:
   WebHostedZone:
     Type: AWS::Route53::HostedZone
     Properties:
-      Name: alertas-imagenes-AWS-celebridades.com.
+      Name: alertas-imagenes-AWS-celebridades-${AWS::AccountId}.com.
       HostedZoneConfig:
         Comment: "Hosted Zone para alertas de imágenes"
 
   MyRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
-      HostedZoneName: alertas-imagenes-AWS-celebridades.com.
-      Name: www.alertas-imagenes-AWS-celebridades.com.        # Subdominio deseado
+      HostedZoneName: alertas-imagenes-AWS-celebridades-${AWS::AccountId}.com.
+      Name: www.alertas-imagenes-AWS-celebridades-${AWS::AccountId}.com.        # Subdominio deseado
       Type: A
       AliasTarget:
         DNSName: !GetAtt WebDistribution.DomainName
