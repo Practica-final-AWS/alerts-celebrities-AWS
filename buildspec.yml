@@ -1,5 +1,11 @@
 version: 0.2
 
+env:
+  variables:
+    BUCKET_NAME: web-bucket-html-$AWS_ACCOUNT_ID  # Variable de entorno para el bucket
+    AWS_ACCOUNT_ID: !Ref AWS::AccountId          # CloudFormation injecta el AccountId
+    REGION: !Ref AWS::Region
+
 phases:
   pre_build:
     commands:
@@ -19,7 +25,7 @@ phases:
   post_build:
     commands:
       # 3. Subimos el archivo ya modificado al bucket web
-      - aws s3 cp index.html s3://web-bucket-html-${AWS::AccountId}/index.html
+      - aws s3 cp index.html s3://$BUCKET_NAME/index.html
       # 4. (Opcional) Limpiamos la caché de CloudFront para que el cambio sea instantáneo
       - DIST_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[0].Id=='web-bucket-origin'].Id" --output text)
       - aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"
