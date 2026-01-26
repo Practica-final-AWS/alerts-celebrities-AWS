@@ -1,12 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: S3 to SQS to Lambda with Rekognition, DynamoDB and SNS.
 
-Parameters:
-  CloudFrontDomain:
-    Type: String
-    Description: "Domain name de la distribución CloudFront (ej: d123456abcdef8.cloudfront.net)"
-
-
 Resources:
   # 1. DynamoDB Table
   CelebrityResultsTable:
@@ -214,7 +208,7 @@ Resources:
             Resource: !Sub ${WebBucket.Arn}/*
             Condition:
               StringEquals:
-                AWS:SourceArn: "*"
+                AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${WebDistribution}
 
 # ----------------------------
 # CLOUDFRONT
@@ -413,31 +407,3 @@ Resources:
                   - logs:PutLogEvents
                 Resource: "*"
 
-# ----------------------------
-# ROUTE53
-# ----------------------------
-
-  Parameters:
-    DomainName:
-      Type: String
-      Default: subida-imagenes-celebrities-AWS.com
-      Description: "Nombre de tu dominio principal"
-    SubDomain:
-      Type: String
-      Default: www
-      Description: "Subdominio a usar con CloudFront (ej: www)"
-    HostedZoneId:
-      Type: String
-      Description: "Hosted Zone ID de Route53"
-
-  Resources:
-
-    Route53AliasRecord:
-      Type: AWS::Route53::RecordSet
-      Properties:
-        HostedZoneId: !Ref HostedZoneId
-        Name: !Sub "${SubDomain}.${DomainName}."
-        Type: A
-        AliasTarget:
-          DNSName: CloudFrontDomain
-          HostedZoneId: Z2FDTNDATAQYW2  # Siempre este para CloudFront
