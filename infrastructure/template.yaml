@@ -406,3 +406,32 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: "*"
+
+# ----------------------------
+# ROUTE53
+# ----------------------------
+
+  Parameters:
+    DomainName:
+      Type: String
+      Default: subida-imagenes-celebrities-AWS.com
+      Description: "Nombre de tu dominio principal"
+    SubDomain:
+      Type: String
+      Default: www
+      Description: "Subdominio a usar con CloudFront (ej: www)"
+    HostedZoneId:
+      Type: String
+      Description: "Hosted Zone ID de Route53"
+
+  Resources:
+
+    Route53AliasRecord:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        HostedZoneId: !Ref HostedZoneId
+        Name: !Sub "${SubDomain}.${DomainName}."
+        Type: A
+        AliasTarget:
+          DNSName: !GetAtt WebDistribution.DomainName
+          HostedZoneId: Z2FDTNDATAQYW2  # Siempre este para CloudFront
