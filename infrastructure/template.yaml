@@ -1,6 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: S3 to SQS to Lambda with Rekognition, DynamoDB and SNS.
 
+Parameters:
+  CloudFrontDomain:
+    Type: String
+    Description: "Domain name de la distribución CloudFront (ej: d123456abcdef8.cloudfront.net)"
+
+
 Resources:
   # 1. DynamoDB Table
   CelebrityResultsTable:
@@ -433,5 +439,5 @@ Resources:
         Name: !Sub "${SubDomain}.${DomainName}."
         Type: A
         AliasTarget:
-          DNSName: !GetAtt WebDistribution.DomainName
+          DNSName: CloudFrontDomain
           HostedZoneId: Z2FDTNDATAQYW2  # Siempre este para CloudFront
