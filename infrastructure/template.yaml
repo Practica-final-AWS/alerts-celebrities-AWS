@@ -135,20 +135,13 @@ Resources:
                       
                       celebs = response.get('CelebrityFaces', [])
                       is_celebrity = len(celebs) > 0
-                      # celeb_name = str(celebs[0]['Name']) if is_celebrity else "None"
-                      if is_celebrity:
-                          celeb_name = str(celebs[0]['Name'])
-                          match_confidence = float(celebs[0]['MatchConfidence'])
-                      else:
-                          celeb_name = "None"
-                          match_confidence = 0.0
+                      celeb_name = str(celebs[0]['Name']) if is_celebrity else "None"
 
                       # Save to DynamoDB
                       table.put_item(Item={
                           'ImageKey': key,
                           'IsCelebrity': is_celebrity,
                           'CelebrityName': celeb_name,
-                          'MatchConfidence': match_confidence,
                           'Bucket': bucket
                       })
 
