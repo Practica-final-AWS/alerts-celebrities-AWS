@@ -417,7 +417,7 @@ Resources:
   MyRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
-      HostedZoneName: !Ref WebHostedZone
+      HostedZoneName: alertas-imagenes-AWS-celebridades.com.
       Name: www.alertas-imagenes-AWS-celebridades.com.        # Subdominio deseado
       Type: A
       AliasTarget:
