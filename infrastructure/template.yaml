@@ -178,7 +178,7 @@ Resources:
     Type: AWS::SNS::Subscription
     Properties:
       Protocol: email
-      Endpoint: 22577867@live.uem.es  # Reemplaza con tu correo
+      Endpoint: 22577867@live.uem.es
       TopicArn: !Ref CelebrityAlertTopic
 
   # S3 - WEB
@@ -210,11 +210,9 @@ Resources:
               StringEquals:
                 AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${WebDistribution}
 
-# ----------------------------
-# CLOUDFRONT
-# ----------------------------
+  # CLOUDFRONT
 
-  ## Origin Access Control
+  # Origin Access Control
   CloudFrontOAC:
     Type: AWS::CloudFront::OriginAccessControl
     Properties:
@@ -241,19 +239,22 @@ Resources:
           ViewerProtocolPolicy: redirect-to-https
           AllowedMethods: [GET, HEAD]
           CachedMethods: [GET, HEAD]
-          DefaultTTL: 0          # Tiempo en cache por defecto = 0 segundos
-          MaxTTL: 0              # TTL máximo = 0
-          MinTTL: 0              # TTL mínimo = 0
+          DefaultTTL: 0
+          MaxTTL: 0
+          MinTTL: 0
           ForwardedValues:
-            QueryString: true      # Para que respete query strings (útil si haces ?v=1)
+            QueryString: true
             Headers:
-              - Origin            # Para que respete headers de control
+              - Origin
             Cookies:
               Forward: none
         ViewerCertificate:
           CloudFrontDefaultCertificate: true
 
-  # Lambda para generar URL prefirmada
+
+  # Lambda to generate presigned URL
+
+  # Role for Lambda
   LambdaUploadRole:
     Type: AWS::IAM::Role
     Properties:
@@ -279,9 +280,7 @@ Resources:
                   - logs:PutLogEvents
                 Resource: "*"
 
-  # ----------------------------
-  # LAMBDA (PYTHON)
-  # ----------------------------
+  # Lambda Function
   UploadLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -316,9 +315,8 @@ Resources:
 
           def resp(c,m):
               return {"statusCode":c,"headers":{"Access-Control-Allow-Origin":"*"},"body":json.dumps({"error":m})}
-# ----------------------------
+
 # API GATEWAY
-# ----------------------------
   HttpApi:
     Type: AWS::ApiGatewayV2::Api
     Properties:
