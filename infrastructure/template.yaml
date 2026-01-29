@@ -373,34 +373,3 @@ Resources:
       Source:
         Type: CODEPIPELINE
         BuildSpec: buildspec.yml # El archivo que crearemos en el repo
-
-  # Rol para CodeBuild
-  CodeBuildRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: codebuild.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: CodeBuildCustomPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - apigateway:GET
-                  - s3:PutObject
-                  - s3:GetBucketLocation
-                  - s3:ListBucket
-                  - cloudfront:CreateInvalidation
-                Resource: "*" # Puedes acotarlo a tus ARNs específicos para más seguridad
-              - Effect: Allow # Permisos para que CodeBuild escriba sus propios logs
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: "*"
